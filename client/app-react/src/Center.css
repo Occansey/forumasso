@@ -1,0 +1,36 @@
+.postform{
+    border-radius: 25px; /* Adjust the value for rounded corners */
+    left: 50%;
+    height:70%;
+    right: 0;
+    width: 75%;
+    align-items:center; /* Align items vertically */
+    padding: 20p x 20px 20px 20px; /* Adjust padding as needed */
+    background-color: #000000; /* Adjust background color */
+    box-shadow: 2% 4% 8% #000102; /* Add shadow for depth */
+    transform: translateX(15%);
+    padding-top: 150px;
+}
+
+.inputer,p,.background-div-post{
+    width:50%;
+    transform: translateX(50%);
+    border-radius: 5px;
+    text-align: center;
+}
+.background-div-post{
+    padding: 50px 0px 0px 0px;
+}
+
+.flexer{
+    display: flex;
+    transform: translateX(25%);
+    align-items: center; /* Align items vertically */
+    left: 50%;
+}
+.postContainer{
+    height: 70vh;
+    overflow: hidden;
+    overflow-y: scroll;
+    
+}

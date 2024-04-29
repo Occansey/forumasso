@@ -1,0 +1,73 @@
+.rounded-navbar {
+    border-radius: 25px; /* Adjust the value for rounded corners */
+    position: fixed;
+    top: 2.5%;
+    left: 50%;
+    right: 0;
+    width: 30%;
+    z-index: 1000; /* Ensure the navbar stays above other content */
+    display: flex;
+    align-items: center; /* Align items vertically */
+    padding: 20px 20px 20px 20px; /* Adjust padding as needed */
+    background-color: #000000; /* Adjust background color */
+    box-shadow: 1px 2px 3px #000003; /* Add shadow for depth */
+    transform: translateX(-50%);
+  }
+  .rounded-navbar2 {
+    border-radius: 105px; /* Adjust the value for rounded corners */
+    position: fixed;
+    height:2%;
+    top: 3%;
+    left: 10;
+    right: 0;
+    width: 5%;
+    z-index: 1000; /* Ensure the navbar stays above other content */
+    display: flex;
+    align-items: center; /* Align items vertically */
+    padding: 20px 20px 20px 20px; /* Adjust padding as needed */
+    background-color: #000000; /* Adjust background color */
+    box-shadow: 0 2px 4px #0e0000; /* Add shadow for depth */
+    transform: translateX(-5%);
+  }
+  
+  img{
+    overflow: hidden;
+    width:20px;
+    height: 20px;
+  
+  }
+  
+  .navbar-nav {
+    display: flex;
+    align-items: center; /* Align items vertically */
+    list-style-type: none; /* Remove default list styles */
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+  }
+  
+  .nav-item {
+    margin-left: 10px; /* Adjust spacing between items */
+  }
+  
+  .nav-link {
+    text-decoration: none; /* Remove default underline */
+    color: #333; /* Adjust link color */
+  }
+  
+@media (max-width: 768px) {
+  .rounded-navbar {
+    border-radius: 25px; /* Adjust the value for rounded corners */
+    position: fixed;
+    top: 2.5%;
+    left: 50%;
+    right: 0;
+    width: 30%;
+    z-index: 1000; /* Ensure the navbar stays above other content */
+    display: flex;
+    align-items: center; /* Align items vertically */
+    padding: 20px 20px 20px 20px; /* Adjust padding as needed */
+    background-color: #000000; /* Adjust background color */
+    box-shadow: 1px 2px 3px #000003; /* Add shadow for depth */
+    transform: translateX(-50%);
+    }
+  }

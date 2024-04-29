@@ -1,0 +1,38 @@
+.sliding-section {
+    width: 75%;
+    margin: 0 auto;
+    background-color: #070707;
+    border-radius: 100px; 
+    overflow: hidden;
+    border: 3px solid #333;
+    z-index: 1000; /* Ensure the navbar stays above other content */
+    bottom:0;
+    position:fixed;
+    transform: translateX(-50%);
+    left:50%;
+  }
+  
+  .sliding-content {
+    display: flex;
+    padding: 20px;
+    animation: sliding-animation 30s linear infinite; /* CSS animation for sliding */
+  }
+  
+  @keyframes sliding-animation {
+    0% {
+      transform: translateX(-100%); /* Start position: off-screen to the left */
+    }
+    100% {
+      transform: translateX(100%); /* End position: off-screen to the right */
+    }
+  }
+  
+  .sliding-item {
+    flex: 0 0 auto;
+    margin-right: 10px; /* Adjust spacing between items */
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    border-radius: 8px; /* Rounded corners for the items */
+  }
+  
