@@ -7,6 +7,7 @@ import Tsect from './TopSection.jsx'
 import Login from './Login.jsx'
 import Mainq from './Mainq.jsx'
 import FriendsList from './Sidebar'
+
 const friends = [
   {
     id: 1,
@@ -50,7 +51,6 @@ const friends = [
   },
 ];
 
-
 const posts = [
   {
     id: 1,
@@ -71,6 +71,7 @@ const posts = [
     content: 'Online'
   },
 ];
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Nav connected={true} admin={false}/>
@@ -81,4 +82,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <Tsect/>
   </React.StrictMode>,
 )
+
 
