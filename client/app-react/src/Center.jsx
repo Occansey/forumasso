@@ -2,17 +2,16 @@ import { useState,React,useEffect } from 'react';
 import './Center.css'
 import { Form,Button,Container,Row,Col } from 'react-bootstrap';
 import axios from 'axios'
-import Login from './Login'
+
 
 function Center()
 {
   const [inputValue, setInputValue] = useState("");
-  const [profilePage,setProfilePage]=useState(true);
+  const [profilePage,setProfilePage]=useState(false);
   const [topPage,setTopPage]=useState(false);
   const [friendsPage,setFriendsPage]=useState(false)
-  const [publicPage,setPublicPage]=useState(false);
+  const [publicPage,setPublicPage]=useState(true);
   const [privatePage,setPrivatePage]=useState(false);
-  const [login,setLogin]=useState(true)
   function handleFormSubmitPublic(event){
     event.preventDefault();
     axios.post('http://localhost:3000/posts/public?id=user1',{
@@ -44,7 +43,7 @@ function Center()
         } catch (error) {
           console.error('Error fetching data: ', error) ;
         }
-      }; 
+      };
       fetchData();},[])
     return(
     posts.map((post)=>(
@@ -65,7 +64,6 @@ function Center()
     return(
       <>
       <Form onSubmit={handleFormSubmitPublic}className='postform'>
-
           {(profilePage || friendsPage ||publicPage || privatePage) && (
           <><p>Username 200 posts 20 Friends </p>
           <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">

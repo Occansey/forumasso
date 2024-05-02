@@ -3,7 +3,6 @@ const { ObjectId } = require('mongodb');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
 const cors = require('cors');
 
 router.use(cors());
