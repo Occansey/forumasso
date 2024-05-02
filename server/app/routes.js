@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const cors = require('cors');
-// const session = require("express-session");
 
 router.use(cors());
 router.use(express.json());
@@ -269,24 +268,14 @@ router.post('/user/set-admin', async(req,res)=>{
 
 
 
-// router.get('user/friends', async(req,res)=>{
-// })
-// // router.get("/", (req, res) => {
-//     console.log('garde la pêche')
-//     if (req.session.views) {
-//       req.session.views++;
-//       res.send(`<p>Session views: ${req.session.views}</p>`);
-//     } else {
-//       req.session.views = 1;
-//       res.send(`<p>Session initialized. Welcome!</p>`);
-//     }
-//   });
+router.get('user/friends', async(req,res)=>{
+})
 // Routes manquantes
 // add friends --- partially done 
 // réponses à un post
 // attribution du statut admin ---part done
 //search users ----- done 
-console.log('saga ')
+
 
 
 // // // // // // // // // // // // Essential fonctions and consts

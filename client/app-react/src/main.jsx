@@ -74,12 +74,12 @@ const posts = [
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Nav connected={true} admin={false}/>
-    <Center/>
-    {/* <Login />   */}
+    {/* <Nav connected={true} admin={false}/> */}
+    {/* <Center/> */}
+    <Login  />  
     {/* <Mainq/> */}
-    <FriendsList friends={friends} posts={posts} />
-    <Tsect/>
+    {/* <FriendsList friends={friends} posts={posts} /> */}
+    {/* <Tsect/> */}
   </React.StrictMode>,
 )
 
