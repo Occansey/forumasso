@@ -1,30 +1,28 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './Register.css';
-
+import Cookie from 'js-cookie'
 const Login = ({connected,setConnected}) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-
+  axios.create({withCredentials: true});
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!username || !password) {
       setMessage('Please fill in all fields');
       return;
     }
-
     try {
       const response = await axios.post('http://localhost:3000/login', {
         username,
         password,
       });
       setMessage(response.data.message);
+      Cookie.set('userId',response.data.userId,{maxAge: 2 * 60 * 60 * 1000})
       setConnected(true);
-    } catch (error) {
-      setMessage(error.response.data.message);
-    }
-  };
+    } catch (error) {setMessage(error.response.data.message);}
+  }
 
   return (
     <div className="register-container">

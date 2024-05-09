@@ -3,9 +3,9 @@ import { Navbar } from 'react-bootstrap';
 import logo from './logox.png';
 import './Navbar.css';
 import Center from './Center';
+import axios from 'axios'
 
-
-function Nav() {
+function Nav({setConnected}) {
   const [pageStates, setPageStates] = useState({
     profilePage: false,
     friendsPage: false,
@@ -14,6 +14,13 @@ function Nav() {
     userPage: false
   });
 
+
+  const logger=async()=>{
+    try{
+      await axios.get(`http://localhost:3000/logout`,{}); 
+      setConnected(false)
+    } catch (error) {console.error('Error fetching data: ', error.data.response);};
+}
   const navigate = (page) => {
     setPageStates((prevStates) => {
       const newStates = { ...prevStates };
@@ -54,7 +61,7 @@ function Nav() {
         <Navbar.Collapse id="basic-navbar-nav">
           <ul className="navbar-nav ml-auto">
               <li className="nav-item">
-                <a className="nav-link" href="#link">Logout</a>
+                <a className="nav-link" href="#link" onClick={()=>logger()}>Logout</a>
               </li>
           </ul>
         </Navbar.Collapse>

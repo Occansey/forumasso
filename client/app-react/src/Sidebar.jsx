@@ -2,13 +2,16 @@
     import './FriendsList.css';
     import { Form, Button, Container, Row, Col } from 'react-bootstrap';
     import axios from 'axios';
+    import Cookies from 'js-cookie';
 
 
 function FriendsList (prop){
   const [message,setMessage]=useState()
+  const userCookieId=Cookies.get('userId')
+  console.log(userCookieId+'sis is ')
   const makeAdmin=async (userId)=>{
     try{
-    const response=await axios.post(`http://localhost:3000/makeadmin?adminId=661cdfea7213a820f8a34d38&memberId=${userId}`,{})
+    const response=await axios.post(`http://localhost:3000/makeadmin?adminId=${userCookieId}&memberId=${userId}`,{})
     setMessage(response.data.message);
     }catch (error) {
     setMessage(error.response);
@@ -16,7 +19,7 @@ function FriendsList (prop){
   }
   const makeMember=async(userId)=>{
     try{
-    const response=await axios.post(`http://localhost:3000/acceptmember?adminId=661cdfea7213a820f8a34d38&userId=${userId}`,{})
+    const response=await axios.post(`http://localhost:3000/acceptmember?adminId=${userCookieId}&userId=${userId}`,{})
     setMessage(response.data.message);
     }catch (error) {
     setMessage(error);

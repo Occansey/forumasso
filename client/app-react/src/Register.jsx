@@ -22,9 +22,7 @@ const Register = () => {
         password,
       });
       setMessage(response.data.message);
-    } catch (error) {
-      setMessage(error.response.data.message);
-    }
+    } catch (error) {setMessage(error.response.data.message);}
   };
 
   return (

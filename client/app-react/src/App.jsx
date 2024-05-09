@@ -1,24 +1,25 @@
 import { useState } from 'react'
-import Center from './Center'
 import './index.css'
 import Nav from './Navbar.jsx'
 import Tsect from './TopSection.jsx'
 import Login from './Login.jsx'
-import FriendsList from './Sidebar'
-import { React, useEffect } from 'react';
+import React from 'react';
 import Register from './Register.jsx'
+import Cookies from 'js-cookie';
+
+
 
 function App(){
 
-
-const [connected,isConnected]=useState(false);
+const userCookieId=Cookies.get('userId')
+const [connected,isConnected]=useState(userCookieId? true :false);
 const [auth,setauth]=useState(false)
 
 const changeAuth=()=>setauth(!auth);
 
   return (
-    <>
-    {connected?(<><Nav/><Tsect/></>):
+    <> 
+    {connected?(<><Nav setConnected={isConnected} /><Tsect/></>):
     (<>{auth? (<Login connected={connected} setConnected={isConnected}/>):(<Register/>)}
     <a onClick={changeAuth}>{auth? 'Not yet registered ? Sign up':'Already have an account ?! '} </a></>)}
     </>)

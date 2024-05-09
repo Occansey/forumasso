@@ -3,7 +3,7 @@ import './Center.css'
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import axios from 'axios'
 import FriendsList from './Sidebar';
-import Cookies from 'js-cookie'
+import Cookies from 'js-cookie';
 
 function Center(props) {
   const [inputValue, setInputValue] = useState("");
@@ -13,12 +13,14 @@ function Center(props) {
   const [nbPosts,setNbPosts]=useState(0);
   const [email,setEmail]=useState("");
   const [date,setDate]=useState("");
-  const affiche=Cookies.get('userId')
-  console.log(affiche)
+
+  const userCookieId=Cookies.get('userId')
+
+  console.log(userCookieId+'sis is ')
 
   function handleFormSubmitPublic(event) {
     event.preventDefault();
-    axios.post(`http://localhost:3000/posts/${props.privatePage ? `private` : `public`}?userId=661cdfea7213a820f8a34d38`, {
+    axios.post(`http://localhost:3000/posts/${props.privatePage ? `private` : `public`}?userId=${userCookieId}`, {
       title: titleValue,
       content: inputValue,
     })
@@ -48,19 +50,19 @@ function Center(props) {
 
   const liker=async (postId)=>{
     try{
-    await axios.post(`http://localhost:3000/like?userId=661cdfea7213a820f8a34d38&postId=${postId}`,{}); 
+    const response=await axios.post(`http://localhost:3000/like?userId=${userCookieId}&postId=${postId}`,{}); 
     } catch (error) {console.error('Error fetching data: ', error.response);}};
 
     const disliker=async (postId)=>{
       try{
-        await axios.post(`http://localhost:3000/dislike?userId=661cdfea7213a820f8a34d38&postId=${postId}`,{}); 
-      } catch (error) {console.error('Error fetching data: ', error.data.respons);}};
+        await axios.post(`http://localhost:3000/dislike?userId=${userCookieId}&postId=${postId}`,{}); 
+      } catch (error) {console.error('Error fetching data: ', error.data.response);}};
 
   const GetPosts = ({ mode = `user/profile` }) => {
     const [posts, setPosts] = useState([]);
       const fetchData = async () => {
         try {
-          const response = await axios.get(`http://localhost:3000/${mode}?userId=661cdfea7213a820f8a34d38`);
+          const response = await axios.get(`http://localhost:3000/${mode}?userId=${userCookieId}`);
           if(mode == `user/profile` ){
           setPosts(response.data.posts.reverse())
           setUsername(response.data.profile.username);

@@ -192,7 +192,7 @@ router.post('/login', async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) return res.status(401).json({ message: 'Invalid password' });
         req.session.userId =user._id.toString();
-        res.status(200).json({ message: 'Logged in successfully'});
+        res.status(200).json({ message: 'Logged in successfully',user : user});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -211,9 +211,6 @@ router.get('/messages', async (req, res) => {
 
 router.post('/messages', async (req, res) => {
     const { content, uid, pid } = req.body;
-    //   const userId  =new ObjectId(uid)
-    console.log('POST MESSAGES ID')
-    //   const user = await usersCollection.findOne({ _id:userId});
     if (!uid) return res.status(404).json({ message: 'User not found' });
     if (!content) return res.status(400).json({ message: 'Text is required' });
     const newMessage = {
@@ -327,10 +324,8 @@ router.post('/dislike', async(req,res)=>{
 })
 
 
-router.get('/logout', (req, res) => {
-    // Log the user out by destroying their session
+router.get('/logout',async (req, res) => {
     req.session.destroy();
-    // Send a success response
     res.json({ success: true });
   });
   
