@@ -5,7 +5,7 @@
     left: 50%;
     right: 0;
     width: 30%;
-    z-index: 1000; /* Ensure the navbar stays above other content */
+    z-index: 1000; /*Ensure the navbar stays above other content*/
     display: flex;
     align-items: center; /* Align items vertically */
     padding: 20px 20px 20px 20px; /* Adjust padding as needed */
@@ -52,6 +52,10 @@
   .nav-link {
     text-decoration: none; /* Remove default underline */
     color: #333; /* Adjust link color */
+  }
+
+  .nav-link:active {
+    background-color: #1e9bff;
   }
   
 @media (max-width: 768px) {

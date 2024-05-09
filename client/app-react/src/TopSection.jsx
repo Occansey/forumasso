@@ -24,7 +24,7 @@ function Tsect()
         <Col>
           <div className="sliding-section">
             <div className="sliding-content">
-              {posts.map((post)=><div className="sliding-item">{post.title}</div>)}
+              {posts.map((post)=><div className="sliding-item" key={post._id}>{post.title}</div>)}
             </div>
           </div>
         </Col>

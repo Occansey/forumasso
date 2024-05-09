@@ -11,7 +11,10 @@
     transform: translateX(15%);
     padding-top: 150px;
 }
-
+.minute{
+    width: 75vh;
+    overflow-X: hidden;
+}
 .inputer,p,.background-div-post{
     width:50%;
     transform: translateX(50%);
@@ -32,5 +35,11 @@
     height: 70vh;
     overflow: hidden;
     overflow-y: scroll;
-    
+}
+#pp {
+    width: 15%;
+    height: 15%;
+    border-radius: 50%;
+    position: fixed;
+
 }

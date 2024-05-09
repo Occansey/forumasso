@@ -1,32 +1,39 @@
 const express = require('express');
 const { ObjectId } = require('mongodb');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
 const cors = require('cors');
+const session = require('express-session');
 
 router.use(cors());
 router.use(express.json());
 const MongoClient = require('mongodb').MongoClient;
 const mongoURL = 'mongodb+srv://maxwelloccansey:amineMaxwell75%3F@organizasso.oqwz5xd.mongodb.net/organizasso';
 const dbName = 'organizasso';
-let postsCollection="";
-let messagesCollection ='';
-let usersCollection='';
+let postsCollection = "";
+let messagesCollection = '';
+let usersCollection = '';
 
 MongoClient.connect(mongoURL)
     .then(client => {
         console.log('Connected to MongoDB');
         const db = client.db(dbName);
         postsCollection = db.collection('posts');
-        usersCollection= db.collection('users');
-        messagesCollection=db.collection('messages');
+        usersCollection = db.collection('users');
+        messagesCollection = db.collection('messages');
     })
     .catch(error => {
         console.error('Error connecting to MongoDB:', error);
     });
 
+    router.use(session({
+        secret: 'your secret key', // Replace with your own secret key
+        resave: false,
+        saveUninitialized: true,
+        cookie: {
+        maxAge: 2 * 60 * 60 * 1000, // Set the cookie to last for 2 hours
+        secure: false // Set to true if using HTTPS
+      }}));  
 
 // // // // // // // // // // // // POSTS
 // GET ALL POSTS 
@@ -50,44 +57,48 @@ router.get('/posts/public', async (req, res) => {
 
 // GET MESSAGES BASED ON A QUERY 
 router.get('/posts/search', async (req, res) => {
-    const { title, content } = req.query; 
+    const { title, content } = req.query;
     try {
         let query = {};
         if (title) {
             query.title = { $regex: title, $options: 'i' };
-        }  
+        }
         if (content) {
-            query.content = { $regex: content, $options: 'i' }; 
+            query.content = { $regex: content, $options: 'i' };
         }
         const posts = await postsCollection.find(query).toArray();
-        
+
         res.json(posts);
     } catch (error) {
         res.status(500).json({ message: error.message });
-    }   
+    }
 });
 
 // Create a new post
 router.post('/posts/private', async (req, res) => {
     const { title, content } = req.body; // Destructuring req.body to extract title and content
-    const user_id=req.query.id
-    if (!title || !content) {
-        res.status(400).json({ message: 'Title and content are required' });
-        return;
-    }
+    const userId = req.query.id
+    if (!title || !content) return res.status(400).json({ message: 'Title and content are required' });
+    if (!userId) return res.status(400).json({message: 'Userid rquired'})
     try {
+        const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+        if (!user) return res.status(400).json({message: 'User not found'});
+        if (!user.member) return res.status(403).json({message :'Only members can post '});
+        if (!user.admin) return res.status(403).json({message :'Only admins can post in the private space'});
         const newPost = {
-            userid:user_id,
-            posts: [],
-            messages:[],
-            privatePost:true,
-            likes:[],
-            dislikes:[],
-            timestamp:new Date()
+            userid: userId,
+            title: title,
+            content: content,
+            privatePost: true,
+            messages: [],
+            likes: [],
+            dislikes: [],
+            timestamp: new Date()
         };
-        await postsCollection.insertOne(newPost);
-        res.status(201).json(newPost);
-        console.log('succesful private post posted')
+        const post=await postsCollection.insertOne(newPost)
+        const postId=post.insertedId.toString();
+        await usersCollection.updateOne({_id: new ObjectId(userId)},{$push:{posts:postId}})
+        res.status(201).json({message :"succesful private post posted"});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -95,26 +106,27 @@ router.post('/posts/private', async (req, res) => {
 
 router.post('/posts/public', async (req, res) => {
     const { title, content } = req.body; // Destructuring req.body to extract title and content
-    const user_id=req.query.id
-    if (!title || !content) {
-        res.status(400).json({ message: 'Title and content are required' });
-        return;
-    }
+    const userId = req.query.userId
+    if (!title || !content) return res.status(400).json({ message: 'Title and content are required' });
+    if (!userId) return res.status(400).json({message: 'userId required'})
     try {
+        const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+        if (!user) return res.status(400).json({message: 'User not found'});
+        if (!user.member) return res.status(403).json({message :'Only members can post '});
         const newPost = {
-            userid:user_id,
-            title:title,
-            content:content,
-            privatePost:false,
-            posts: [], 
-            messages:[],
-            likes:[],
-            dislikes:[],
-            timestamp:new Date()
+            userid: userId,
+            title: title,
+            content: content,
+            privatePost: false,
+            messages: [],
+            likes: [],
+            dislikes: [],
+            timestamp: new Date()
         };
-        await postsCollection.insertOne(newPost);
-        res.status(201).json(req.body);
-        console.log('succesful public post posted')
+        const post=await postsCollection.insertOne(newPost)
+        const postId=post.insertedId.toString();
+        await usersCollection.updateOne({_id: new ObjectId(userId)},{$push:{posts:postId}})
+        res.status(201).json({message :"succesful public post posted"});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -122,7 +134,7 @@ router.post('/posts/public', async (req, res) => {
 
 // Delete a post by ID
 router.delete('/posts', async (req, res) => {
-    const postId=new ObjectId(req.params.id)
+    const postId = new ObjectId(req.params.id)
     try {
         const result = await postsCollection.deleteOne({ _id: postId });
         if (result.deletedCount === 0) {
@@ -141,34 +153,30 @@ router.delete('/posts', async (req, res) => {
 // Register endpoint
 router.post('/register', async (req, res) => {
     try {
-        const { username, email, password, userPosts } = req.body;
+        const { username, email, password } = req.body;
 
-        if (!username || !email || !password) return res.status(400).json({ message: 'Username, email, and password are required' });
+        if (!username ) return res.status(400).json({ message: 'Username required' });
+        if (!email ) return res.status(400).json({ message: 'email required' });
+        if (!password ) return res.status(400).json({ message: 'password required' });
 
-        const existingUser = await usersCollection.findOne({ $or: [{ username }, { email }] });
-        if (existingUser) return res.status(400).json({ message: 'Username or email already exists' });
+        const existingUser = await usersCollection.findOne({ username: username } );
+        if (existingUser) return res.status(400).json({ message: 'Username already exists' });
+        const existingMail = await usersCollection.findOne({ email: email } );
+        if (existingMail) return res.status(400).json({ message: 'Email already exists' });
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = {
-            username:username,
-            email:email,
+            username: username,
+            email: email,
             password: hashedPassword,
-            admin: false, 
+            admin: false,
             connected: true,
-            
-            posts: [], 
-            messages:[],
-            timestamp:new Date().getTime()
+            posts: [],
+            messages: [],
+            timestamp: new Date().getTime()
         };
-        const result = await usersCollection.insertOne(newUser);
-        if (userPosts && Array.isArray(userPosts)) {
-            const postIds = [];
-            for (const post of userPosts) {
-                const insertedPost = await postsCollection.insertOne(post);
-                postIds.push(insertedPost.insertedId);
-            }
-            await usersCollection.updateOne({ _id: result.insertedId }, { $set: { posts: postIds } });
-        }
-        res.status(201).json({ message: 'User registered successfully'});
+        await usersCollection.insertOne(newUser);
+        res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -176,24 +184,25 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
-        if (!email || !password) return res.status(400).json({ message: 'Email and password are required' });
-        const user = await usersCollection.findOne({ email: email });
+        const { username, password } = req.body;
+        if (!username || !password) return res.status(400).json({ message: 'username and password are required' });
+        const user = await usersCollection.findOne({ username: username });
         if (!user) return res.status(404).json({ message: 'User not found' });
+        if (!user.member) return res.status(403).json({message : 'Please wait for approval by an admin'})
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) return res.status(401).json({ message: 'Invalid password' }); 
-        const token = generateToken(user);
-        res.status(200).json({ message: 'Logged in successfully', user, token });
+        if (!isPasswordValid) return res.status(401).json({ message: 'Invalid password' });
+        req.session.userId =user._id.toString();
+        res.status(200).json({ message: 'Logged in successfully'});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-  });
+});
 
 router.get('/messages', async (req, res) => {
-    const muid=req.query.id
-    const mid=new ObjectId(muid)
+    const muid = req.query.id
+    const mid = new ObjectId(muid)
     try {
-        const messages = await messagesCollection.find({ userId: mid}).toArray();
+        const messages = await messagesCollection.find({ userId: mid }).toArray();
         res.json(messages);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -201,19 +210,19 @@ router.get('/messages', async (req, res) => {
 });
 
 router.post('/messages', async (req, res) => {
-  const { content , uid , pid } = req.body;
-//   const userId  =new ObjectId(uid)
-  console.log('POST MESSAGES ID')
-//   const user = await usersCollection.findOne({ _id:userId});
-  if (!uid) return res.status(404).json({ message: 'User not found' });
-  if (!content) return res.status(400).json({ message: 'Text is required' });
-  const newMessage = {
-    content:content,
-    userId: uid,
-    postId: pid,
-    privMessage:false,
-    timestamp: new Date().getTime(),
-  };
+    const { content, uid, pid } = req.body;
+    //   const userId  =new ObjectId(uid)
+    console.log('POST MESSAGES ID')
+    //   const user = await usersCollection.findOne({ _id:userId});
+    if (!uid) return res.status(404).json({ message: 'User not found' });
+    if (!content) return res.status(400).json({ message: 'Text is required' });
+    const newMessage = {
+        content: content,
+        userId: uid,
+        postId: pid,
+        privMessage: false,
+        timestamp: new Date().getTime(),
+    };
     try {
         await messagesCollection.insertOne(newMessage);
         res.status(201).json(req.body);
@@ -225,28 +234,108 @@ router.post('/messages', async (req, res) => {
 
 router.get('/posts/topliked', async (req, res) => {
     const posts = await postsCollection.find().toArray()
-    console.log(posts)
-    const tet=posts.slice(-10).sort((a, b) =>b.likes.length - a.likes.length);
-    res.json(tet);
+    const tet = posts.sort((a, b) => b.likes.length - a.likes.length);
+    res.status(201).json(tet);
+});
+
+
+router.get('/user/profile',async(req,res)=>{
+    const userId=req.query.userId
+    if(!userId) return res.status(400).json({message : 'User id required'})
+    try{ 
+    const user=await usersCollection.findOne({_id:new ObjectId(userId)});
+    if(!user) return res.status(400).json({message: 'user not found'});
+    const posts=await postsCollection.find({userid:userId}).toArray();
+    return res.status(201).json({profile:user, posts:posts })
+    }catch(error){res.status(500).json({message :'erreur interne'+error.message} )}
+})
+
+router.post('/makeadmin', async (req, res) => {
+    const { adminId, memberId } = req.query
+    if (!adminId || !memberId ) return res.status(400).json('adminId and memberid required') 
+    try {
+        const user = await usersCollection.findOne({ _id: new ObjectId(adminId) })
+        if (!user) return res.status(402).json({ message: 'admin not found' })
+        if (!user.admin) return res.status(403).json({ message: 'Action only allowed by admin' })
+
+        const member = await usersCollection.findOne({ _id: new ObjectId(memberId) })
+        if (!member) return res.status(402).json({ message: 'member not found' })
+        if (member.admin) return res.status(402).json({ message: 'this member is already an admin' })
+
+        await usersCollection.updateOne({ _id: new ObjectId( memberId)},{$set:{ admin: true }})
+        return res.status(201).json({ message: 'member is now an admin' })
+    }
+    catch (error) { return res.status(500).json({ message: "erreur interne "+error.message }) }
+});
+
+router.get('/users',async(req,res)=>{
+    try{
+    const users=await usersCollection.find().toArray()
+    return res.status(201).json(users)
+    }catch(error){
+        return res.status(500).json({message : 'erreur interne'+error.message})
+    }
+})
+
+router.post('/acceptmember', async (req, res) => {
+    const { adminId, userId } = req.query
+    if (!adminId || !userId ) return res.status(400).json('adminId and userid required') 
+    try {
+        const admin = await usersCollection.findOne({ _id: new ObjectId(adminId) })
+        if (!admin) return res.status(402).json({ message: 'admin not found' })
+        if (!admin.admin) return res.status(403).json({ message: 'Action only allowed by admin' })
+
+        const guest = await usersCollection.findOne({ _id: new ObjectId(userId) })
+        if (!guest) return res.status(402).json({ message: 'guest not found' })
+        if (guest.member) return res.status(402).json({ message: 'this guest is already a member' })
+
+        await usersCollection.updateOne({ _id: new ObjectId( userId)},{$set:{ member: true }})
+        return res.status(201).json({ message: 'guest is now a member' })
+    }
+    catch (error) { return res.status(500).json({ message: "erreur interne "+error.message }) }
+});
+
+
+router.post('/like', async(req,res)=>{
+    const {userId,postId}=req.query
+    if (!(userId && postId)) return res.status(400).json({message: 'userId && postId required'})
+    try{
+        const post=await postsCollection.findOne({_id: new ObjectId(postId)})
+        const user=await usersCollection.findOne({_id: new ObjectId(userId)})
+        if (!user) return res.status(400).json({message : 'User not found'})
+        if (!post) return res.status(400).json({message :'Post not found'})
+        if (!user.member) return res.status(403).json({message: 'likes reserved to members '})
+        if (post.likes.includes(userId)) return res.status(400).json('Post already liked')
+        await postsCollection.updateOne({_id : new ObjectId(postId) },{$push:{likes: userId}});
+        return res.status(202).json('post liked')
+    }catch(error){res.status(500).json({message: "erreur interne"+error.message})}
+})
+
+router.post('/dislike', async(req,res)=>{
+    const {userId,postId}=req.query
+    if (!(userId && postId)) return res.status(400).json({message: 'userId && postId required'})
+    try{
+        const post=await postsCollection.findOne({_id: new ObjectId(postId)})
+        const user=await usersCollection.findOne({_id: new ObjectId(userId)})
+        if (!user) return res.status(400).json({message : 'User not found'})
+        if (!user.member) return res.status(403).json({message: 'dislikes reserved to members '})
+        if (!post) return res.status(400).json({message :'Post not found'})
+        if (post.dislikes.includes(userId)) return res.status(400).json('Post already disliked')
+        await postsCollection.updateOne({_id : new ObjectId(postId) },{$push:{dislikes: userId}});
+        return res.status(201).json('post disliked')
+    }catch(error){res.status(500).json({message: "erreur interne"+error.message})}
+})
+
+
+router.get('/logout', (req, res) => {
+    // Log the user out by destroying their session
+    req.session.destroy();
+    // Send a success response
+    res.json({ success: true });
   });
-
-
-
+  
 
 module.exports = router;
 
 // // // // // // // // // // // // Essential fonctions and consts
-function generateToken(user) {
-    const payload =
-    {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        admin: user.admin,
-        connected: user.connected,
-        date: user.date,
-    };
-    const secretKey = crypto.randomBytes(32).toString('hex');
-    const options = { expiresIn: '1h' };
-    return jwt.sign(payload, secretKey, options);
-}
+

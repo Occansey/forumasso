@@ -1,32 +1,54 @@
-import React from 'react';
-import './Login.css';
-import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
+import React, { useState } from 'react';
+import axios from 'axios';
+import './Register.css';
 
-function Login() {
+const Login = ({connected,setConnected}) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!username || !password) {
+      setMessage('Please fill in all fields');
+      return;
+    }
+
+    try {
+      const response = await axios.post('http://localhost:3000/login', {
+        username,
+        password,
+      });
+      setMessage(response.data.message);
+      setConnected(true);
+    } catch (error) {
+      setMessage(error.response.data.message);
+    }
+  };
+
   return (
-    <Container fluid>
-    <Row className="justify-content-center align-items-center" style={{ height: '100vh' }}>
-        <Col xs={2} sm={8} md={6} lg={4}>
-          <Card>
-            <Card.Body>
-              <h3 className="text-center mb-4">Login</h3>
-              <Form>
-                <Form.Group controlId="formBasicEmail">
-                  <Form.Control type="email" placeholder="Enter email" />
-                </Form.Group>
-                <Form.Group controlId="formBasicPassword">
-                  <Form.Control type="password" placeholder="Password" />
-                </Form.Group>
-                <Button variant="primary" type="submit" block>
-                  Login
-                </Button>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+    <div className="register-container">
+      <h2>Login</h2>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="username">Username:</label>
+        <input
+          type="text"
+          id="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <label htmlFor="password">Password:</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit">Login</button>
+      </form>
+      {message && <p>{message}</p>}
+    </div>
   );
-}
+};
 
 export default Login;

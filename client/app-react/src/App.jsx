@@ -1,35 +1,26 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-// import './App.css'
+import Center from './Center'
+import './index.css'
+import Nav from './Navbar.jsx'
+import Tsect from './TopSection.jsx'
+import Login from './Login.jsx'
+import FriendsList from './Sidebar'
+import { React, useEffect } from 'react';
+import Register from './Register.jsx'
 
-function App() {
-  const [count, setCount] = useState(0)
+function App(){
+
+
+const [connected,isConnected]=useState(false);
+const [auth,setauth]=useState(false)
+
+const changeAuth=()=>setauth(!auth);
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    {connected?(<><Nav/><Tsect/></>):
+    (<>{auth? (<Login connected={connected} setConnected={isConnected}/>):(<Register/>)}
+    <a onClick={changeAuth}>{auth? 'Not yet registered ? Sign up':'Already have an account ?! '} </a></>)}
+    </>)
 }
-
 export default App
