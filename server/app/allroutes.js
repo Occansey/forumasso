@@ -4,6 +4,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const session = require('express-session');
+const { required } = require('joi');
 
 router.use(cors());
 router.use(express.json());
@@ -41,19 +42,13 @@ router.get('/posts/private', async (req, res) => {
     try {
         const posts = await postsCollection.find({ privatePost: true }).toArray();
         res.json(posts);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
+    } catch (error) {res.status(500).json({ message: error.message });}});
 
 router.get('/posts/public', async (req, res) => {
     try {
         const posts = await postsCollection.find({ privatePost: false }).toArray();
         res.json(posts);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
+    } catch (error) {res.status(500).json({ message: error.message });}});
 
 // GET MESSAGES BASED ON A QUERY 
 router.get('/posts/search', async (req, res) => {
@@ -70,14 +65,12 @@ router.get('/posts/search', async (req, res) => {
 
         res.json(posts);
     } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
+        res.status(500).json({ message: error.message });}});
 
 // Create a new post
 router.post('/posts/private', async (req, res) => {
     const { title, content } = req.body; // Destructuring req.body to extract title and content
-    const userId = req.query.id
+    const userId = req.query.userId
     if (!title || !content) return res.status(400).json({ message: 'Title and content are required' });
     if (!userId) return res.status(400).json({message: 'Userid rquired'})
     try {
@@ -100,9 +93,7 @@ router.post('/posts/private', async (req, res) => {
         await usersCollection.updateOne({_id: new ObjectId(userId)},{$push:{posts:postId}})
         res.status(201).json({message :"succesful private post posted"});
     } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
+        res.status(500).json({ message: error.message })}});
 
 router.post('/posts/public', async (req, res) => {
     const { title, content } = req.body; // Destructuring req.body to extract title and content
@@ -127,10 +118,29 @@ router.post('/posts/public', async (req, res) => {
         const postId=post.insertedId.toString();
         await usersCollection.updateOne({_id: new ObjectId(userId)},{$push:{posts:postId}})
         res.status(201).json({message :"succesful public post posted"});
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
+    } catch (error) {res.status(500).json({ message: error.message });}});
+
+router.get('/post/messages',async(req,res)=>{
+    const postId=req.query.postId;
+    if (!postId) return res.status(400).json({message : 'postId required' })
+    try{
+        const messages= await messagesCollection.find({postId :postId}).toArray();
+        return res.status(200).json(messages);
+    }catch(error){res.status(500).json({message:'erreur interne'+error.message})}})
+
+router.post('post/messages',async(req,res)=>{
+    const {postId, userId, content}=req.query
+    if (!postId) return res.status(401).json({message: 'postId required'})
+    if (!userId) return res.status(401).json({message: 'userId required'})
+    try{
+        const messageId=await messagesCollection.insertOne({content :content});
+        await usersCollection.updateOne({ _id:userId },{$push:{messages:messageId}})
+        await postsCollection.updateOne({ _id:postId },{$push:{messages:messageId}})
+        return res.status(201).json({message :"succesful comment posted "})
+    }catch(error){res.status(500).json({message :'erreur interne '+error.message})}})
+
+
+
 
 // Delete a post by ID
 router.delete('/posts', async (req, res) => {
@@ -143,9 +153,7 @@ router.delete('/posts', async (req, res) => {
             res.status(204).send();
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
+        res.status(500).json({ message: error.message });}});
 
 
 // // // // // // // // // // // // USERS
@@ -170,6 +178,7 @@ router.post('/register', async (req, res) => {
             email: email,
             password: hashedPassword,
             admin: false,
+            member:false,
             connected: true,
             posts: [],
             messages: [],
@@ -178,9 +187,7 @@ router.post('/register', async (req, res) => {
         await usersCollection.insertOne(newUser);
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
+        res.status(500).json({ message: error.message });}});
 
 router.post('/login', async (req, res) => {
     try {
@@ -194,20 +201,15 @@ router.post('/login', async (req, res) => {
         req.session.userId =user._id.toString();
         res.status(200).json({ message: 'Logged in successfully',user : user});
     } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
+        res.status(500).json({ message: error.message });}});
 
 router.get('/messages', async (req, res) => {
-    const muid = req.query.id
-    const mid = new ObjectId(muid)
+    const postId = req.query.postId
     try {
-        const messages = await messagesCollection.find({ userId: mid }).toArray();
+        const messages = await messagesCollection.findOne({ postId: postId });
         res.json(messages);
     } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
+        res.status(500).json({ message: error.message });}});
 
 router.post('/messages', async (req, res) => {
     const { content, uid, pid } = req.body;
@@ -225,15 +227,12 @@ router.post('/messages', async (req, res) => {
         res.status(201).json(req.body);
         console.log('succesful message posted')
     } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
+        res.status(500).json({ message: error.message });}});
 
 router.get('/posts/topliked', async (req, res) => {
     const posts = await postsCollection.find().toArray()
     const tet = posts.sort((a, b) => b.likes.length - a.likes.length);
-    res.status(201).json(tet);
-});
+    res.status(201).json(tet);});
 
 
 router.get('/user/profile',async(req,res)=>{
@@ -244,8 +243,7 @@ router.get('/user/profile',async(req,res)=>{
     if(!user) return res.status(400).json({message: 'user not found'});
     const posts=await postsCollection.find({userid:userId}).toArray();
     return res.status(201).json({profile:user, posts:posts })
-    }catch(error){res.status(500).json({message :'erreur interne'+error.message} )}
-})
+    }catch(error){res.status(500).json({message :'erreur interne'+error.message} )}})
 
 router.post('/makeadmin', async (req, res) => {
     const { adminId, memberId } = req.query
@@ -262,17 +260,14 @@ router.post('/makeadmin', async (req, res) => {
         await usersCollection.updateOne({ _id: new ObjectId( memberId)},{$set:{ admin: true }})
         return res.status(201).json({ message: 'member is now an admin' })
     }
-    catch (error) { return res.status(500).json({ message: "erreur interne "+error.message }) }
-});
+    catch (error) { return res.status(500).json({ message: "erreur interne "+error.message }) }});
 
 router.get('/users',async(req,res)=>{
     try{
     const users=await usersCollection.find().toArray()
     return res.status(201).json(users)
     }catch(error){
-        return res.status(500).json({message : 'erreur interne'+error.message})
-    }
-})
+        return res.status(500).json({message : 'erreur interne'+error.message})}})
 
 router.post('/acceptmember', async (req, res) => {
     const { adminId, userId } = req.query
@@ -289,8 +284,7 @@ router.post('/acceptmember', async (req, res) => {
         await usersCollection.updateOne({ _id: new ObjectId( userId)},{$set:{ member: true }})
         return res.status(201).json({ message: 'guest is now a member' })
     }
-    catch (error) { return res.status(500).json({ message: "erreur interne "+error.message }) }
-});
+    catch (error) { return res.status(500).json({ message: "erreur interne "+error.message })}});
 
 
 router.post('/like', async(req,res)=>{
@@ -305,8 +299,7 @@ router.post('/like', async(req,res)=>{
         if (post.likes.includes(userId)) return res.status(400).json('Post already liked')
         await postsCollection.updateOne({_id : new ObjectId(postId) },{$push:{likes: userId}});
         return res.status(202).json('post liked')
-    }catch(error){res.status(500).json({message: "erreur interne"+error.message})}
-})
+    }catch(error){res.status(500).json({message: "erreur interne"+error.message})}})
 
 router.post('/dislike', async(req,res)=>{
     const {userId,postId}=req.query
@@ -320,8 +313,7 @@ router.post('/dislike', async(req,res)=>{
         if (post.dislikes.includes(userId)) return res.status(400).json('Post already disliked')
         await postsCollection.updateOne({_id : new ObjectId(postId) },{$push:{dislikes: userId}});
         return res.status(201).json('post disliked')
-    }catch(error){res.status(500).json({message: "erreur interne"+error.message})}
-})
+    }catch(error){res.status(500).json({message: "erreur interne"+error.message})}})
 
 
 router.get('/logout',async (req, res) => {

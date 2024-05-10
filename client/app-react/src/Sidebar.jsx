@@ -8,7 +8,13 @@
 function FriendsList (prop){
   const [message,setMessage]=useState()
   const userCookieId=Cookies.get('userId')
-  console.log(userCookieId+'sis is ')
+  const [admin,setAdmin]=useState(false)
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/user/profile?userId=${userCookieId}`);
+      setAdmin(response.data.profile.admin);
+    } catch (error) {console.error('Error fetching data: ', error);}};
+  fetchData();
   const makeAdmin=async (userId)=>{
     try{
     const response=await axios.post(`http://localhost:3000/makeadmin?adminId=${userCookieId}&memberId=${userId}`,{})
@@ -37,8 +43,9 @@ function FriendsList (prop){
             <p>{friend.email}</p>
             <p>{friend.member ? 'member': 'outsider'}</p>
             <p>{friend.admin ? 'admin': 'user'}</p>
-            {!friend.member && (<Button onClick={()=>makeMember(friend._id)} >ACCEPT</Button>)}
-            {friend.member && !friend.admin &&(<Button onClick={()=>makeAdmin(friend._id)} >MAKE ADMIN</Button>)}
+            {friend._id===userCookieId && (<Button  >ME</Button>)}
+            {!friend.member && admin && (<Button onClick={()=>makeMember(friend._id)} >ACCEPT</Button>)}
+            {friend.member && !friend.admin && admin &&(<Button onClick={()=>makeAdmin(friend._id)} >MAKE ADMIN</Button>)}
           </div>
         </div>
       ))}

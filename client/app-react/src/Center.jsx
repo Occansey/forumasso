@@ -16,8 +16,6 @@ function Center(props) {
 
   const userCookieId=Cookies.get('userId')
 
-  console.log(userCookieId+'sis is ')
-
   function handleFormSubmitPublic(event) {
     event.preventDefault();
     axios.post(`http://localhost:3000/posts/${props.privatePage ? `private` : `public`}?userId=${userCookieId}`, {
@@ -50,7 +48,7 @@ function Center(props) {
 
   const liker=async (postId)=>{
     try{
-    const response=await axios.post(`http://localhost:3000/like?userId=${userCookieId}&postId=${postId}`,{}); 
+    await axios.post(`http://localhost:3000/like?userId=${userCookieId}&postId=${postId}`,{}); 
     } catch (error) {console.error('Error fetching data: ', error.response);}};
 
     const disliker=async (postId)=>{
@@ -92,13 +90,12 @@ function Center(props) {
       )))
   }
 
-
+ const txt="McNulty's on harbor patrol. Daniels is in the police-archives dungeon. Prez is chafing in the suburbs. Greggs has a desk job. The detail may be on ice, but corruption marches on . . . and a horrific discovery is about to turn the Baltimore shipping port inside out. Setting up in the wake of the first season's joint homicide/narcotics detail that exposed a major drug operation — and left its members stigmatized and reassigned — the second season expands to include not only familiar drug dealers, but a group of longshoremen and organized crime members who are caught up in a major homicide case."
 
 
   return (
       <>
-      {!props.userPage &&(<Form onSubmit={handleFormSubmitPublic} className='postform'>
-      <img src='https://pics.craiyon.com/2023-07-15/dc2ec5a571974417a5551420a4fb0587.webp' id='pp' alt='profile picture' />
+      {/* {!props.userPage &&(<Form onSubmit={handleFormSubmitPublic} className='postform'>
         {(props.publicPage || props.privatePage) && (
           <><Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
             <Form.Control className='inputer' value={titleValue} placeholder="title" as="textarea" rows={1} onChange={handleTitleChange} />
@@ -109,15 +106,31 @@ function Center(props) {
           {props.publicPage && (<GetPosts mode='posts/public' />)}
           {props.privatePage && (<GetPosts mode='posts/private' />)}
           {props.profilePage && (
-          <><p>{username} {nbPosts} posts - Admin  </p>
+          <><p>{username} {nbPosts} posts  </p>
             <p>{email}</p>
             <p>member since {date}</p>
           <GetPosts/>
           </>)}
         </Container>
       </Form>)}
-      <FriendsList friends={friends}/>
-      
+      <FriendsList friends={friends}/> */}
+      {/* -----------------------------------------------------------ONE POST------------------------------------------------- */}
+      <Container className='postform'>
+      <div key='{post.id}'>
+      <p>{'post.title'}</p>
+         <Row>{txt}</Row>
+          <div className="background-div-post"></div>
+          <Row className='flexer'>
+            <Col sm={4}>{'post.likes.length'} likes</Col>
+            <Col sm={8}>{'post.dislikes.length'} dislikes</Col>
+          </Row>
+          <Row className='flexer'>
+            <Col sm><Button onClick={()=>liker('post._id')}>Like</Button></Col>
+            <Col sm><Button type="submit" onClick={()=>disliker('post._id')}>Dislike</Button></Col>
+            <Col sm><Button type="submit">Reply</Button></Col>
+          </Row>
+        </div>
+      </Container>
       </>
     );
 }

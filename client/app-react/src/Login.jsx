@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './Register.css';
-import Cookie from 'js-cookie'
+import Cookies from 'js-cookie'
+// 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
 const Login = ({connected,setConnected}) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -13,13 +14,14 @@ const Login = ({connected,setConnected}) => {
       setMessage('Please fill in all fields');
       return;
     }
+
     try {
       const response = await axios.post('http://localhost:3000/login', {
         username,
         password,
       });
-      setMessage(response.data.message);
-      Cookie.set('userId',response.data.userId,{maxAge: 2 * 60 * 60 * 1000})
+      Cookies.set('userId', response.data.user._id, { expires: 1 }); // expires in 7 days
+      setMessage(response.data);
       setConnected(true);
     } catch (error) {setMessage(error.response.data.message);}
   }

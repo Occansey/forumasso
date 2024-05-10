@@ -7,7 +7,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!username || !email || !password) {
