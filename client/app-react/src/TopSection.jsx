@@ -5,7 +5,14 @@ import axios from 'axios'
 
 function Tsect()    
 {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState([])
+
+  const change=(postId)=>{
+    console.log(postId)
+    const postElement = document.getElementById(postId);
+    if (postElement) postElement.scrollIntoView({ behavior: "smooth" })
+    else console.log ('not found')
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,7 +31,7 @@ function Tsect()
         <Col>
           <div className="sliding-section">
             <div className="sliding-content">
-              {posts.map((post)=><div className="sliding-item" key={post._id}>{post.title}</div>)}
+              {posts.map((post)=><button className="sliding-item" key={post._id} onClick={()=>change(post._id)} >{post.title}</button>)}
             </div>
           </div>
         </Col>

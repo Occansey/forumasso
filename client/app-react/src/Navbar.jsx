@@ -14,6 +14,7 @@ function Nav({setConnected}) {
     privatePage: false,
     userPage: false,
   });
+  const [test, setTest]=useState(true)
   const [admin,setAdmin]=useState(false)
   const userCookieId=Cookies.get('userId');
   const fetchData = async () => {
@@ -39,6 +40,7 @@ function Nav({setConnected}) {
       });
       return newStates;
     });
+    setTest(true);
   };
   
 
@@ -81,6 +83,8 @@ function Nav({setConnected}) {
         publicPage={pageStates.publicPage}
         privatePage={pageStates.privatePage}
         userPage={pageStates.userPage}
+        setTest={setTest}
+        test={test}
       />
     </>
   );

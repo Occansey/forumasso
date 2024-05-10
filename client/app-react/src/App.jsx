@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState,useRef } from 'react'
 import './index.css'
 import Nav from './Navbar.jsx'
 import Tsect from './TopSection.jsx'
@@ -14,13 +14,14 @@ function App(){
 const userCookieId=Cookies.get('userId')
 const [connected,isConnected]=useState(userCookieId? true :false);
 const [auth,setauth]=useState(false)
+// if (ref.current) ref.current.scrollIntoView({ behavior: "smooth" });
 
 const changeAuth=()=>setauth(!auth);
 
   return (
     <> 
-    {connected?(<><Nav setConnected={isConnected} /><Tsect/></>):
-    (<>{auth? (<Login connected={connected} setConnected={isConnected}/>):(<Register/>)}
+    {connected?(<><Nav setConnected={isConnected} /><Tsect /></>):
+    (<>{auth? (<Login connected={connected} setConnected={isConnected}/>):(<Register />)}
     <a onClick={changeAuth}>{auth? 'Not yet registered ? Sign up':'Already have an account ?! '} </a></>)}
     </>)
 }

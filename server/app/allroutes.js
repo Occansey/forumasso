@@ -227,7 +227,7 @@ router.post('/login', async (req, res) => {
 
 
 router.get('/posts/topliked', async (req, res) => {
-    const posts = await postsCollection.find().toArray()
+    const posts = await postsCollection.find({ privatePost: false }).toArray()
     const tet = posts.sort((a, b) => b.likes.length - a.likes.length);
     res.status(201).json(tet);});
 
@@ -296,7 +296,8 @@ router.post('/like', async(req,res)=>{
         if (post.likes.includes(userId)) return res.status(400).json('Post already liked')
         await postsCollection.updateOne({_id : new ObjectId(postId) },{$push:{likes: userId}});
         return res.status(202).json('post liked')
-    }catch(error){res.status(500).json({message: "erreur interne"+error.message})}})
+    }catch(error){
+        res.status(500).json({message: "erreur interne"+error.message})}})
 
 router.post('/dislike', async(req,res)=>{
     const {userId,postId}=req.query
