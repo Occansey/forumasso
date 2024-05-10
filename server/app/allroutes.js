@@ -120,24 +120,46 @@ router.post('/posts/public', async (req, res) => {
         res.status(201).json({message :"succesful public post posted"});
     } catch (error) {res.status(500).json({ message: error.message });}});
 
-router.get('/post/messages',async(req,res)=>{
+router.get('/posts/messages',async(req,res)=>{
     const postId=req.query.postId;
     if (!postId) return res.status(400).json({message : 'postId required' })
     try{
+        const poster=await postsCollection.find({_id:new ObjectId(postId)});
+        if(!poster) return res.status(400).json('POST NOT FOUND')
         const messages= await messagesCollection.find({postId :postId}).toArray();
         return res.status(200).json(messages);
     }catch(error){res.status(500).json({message:'erreur interne'+error.message})}})
 
-router.post('post/messages',async(req,res)=>{
-    const {postId, userId, content}=req.query
+router.post('/posts/messages',async(req,res)=>{
+    const {postId, userId}=req.query
+    const content=req.body.content
     if (!postId) return res.status(401).json({message: 'postId required'})
     if (!userId) return res.status(401).json({message: 'userId required'})
+    if (!content) return res.status(401).json({message: 'content required'})
+        
     try{
-        const messageId=await messagesCollection.insertOne({content :content});
-        await usersCollection.updateOne({ _id:userId },{$push:{messages:messageId}})
-        await postsCollection.updateOne({ _id:postId },{$push:{messages:messageId}})
+        const userPresent=await usersCollection.findOne({ _id:new ObjectId(userId) });
+        if(!userPresent) return res.status(400).json({message : "user not found"}) ;
+        const username=userPresent.username;
+        if(!username) res.status(400).json('this user has no usernam')
+        const postPresent=await postsCollection.findOne({ _id:new ObjectId(postId) });
+        if(!postPresent) return res.status(400).json({message : "post not found"}) ;
+        const newMessage = {
+            content: content,
+            username: username,
+            userId: userId,
+            postId: postId,
+            timestamp: new Date().getTime(),
+        };
+        const message=await messagesCollection.insertOne(newMessage);
+        if(!message.acknowledged) return res.status(400).json({message : "error inserting message"}) ;
+        const messageId=message.insertedId.toString();
+        const insertMessageUser=await usersCollection.updateOne({ _id:new ObjectId(userId) },{$push:{messages:messageId}});
+        if (insertMessageUser.modifiedCount <1) return res.status(400).json({message : "user not found"}) ;
+        const insertPostUser=await postsCollection.updateOne({ _id:new ObjectId(postId) },{$push:{messages:messageId}})
+        if (insertPostUser.modifiedCount <1) return res.status(400).json({message : "post not found"}) 
         return res.status(201).json({message :"succesful comment posted "})
-    }catch(error){res.status(500).json({message :'erreur interne '+error.message})}})
+    }catch(error){res.status(500).json({message :' erreur interne '+error.message})}})
 
 
 
@@ -203,31 +225,6 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });}});
 
-router.get('/messages', async (req, res) => {
-    const postId = req.query.postId
-    try {
-        const messages = await messagesCollection.findOne({ postId: postId });
-        res.json(messages);
-    } catch (error) {
-        res.status(500).json({ message: error.message });}});
-
-router.post('/messages', async (req, res) => {
-    const { content, uid, pid } = req.body;
-    if (!uid) return res.status(404).json({ message: 'User not found' });
-    if (!content) return res.status(400).json({ message: 'Text is required' });
-    const newMessage = {
-        content: content,
-        userId: uid,
-        postId: pid,
-        privMessage: false,
-        timestamp: new Date().getTime(),
-    };
-    try {
-        await messagesCollection.insertOne(newMessage);
-        res.status(201).json(req.body);
-        console.log('succesful message posted')
-    } catch (error) {
-        res.status(500).json({ message: error.message });}});
 
 router.get('/posts/topliked', async (req, res) => {
     const posts = await postsCollection.find().toArray()

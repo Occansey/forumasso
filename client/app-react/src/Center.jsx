@@ -15,10 +15,11 @@ function Center(props) {
   const [date,setDate]=useState("");
 
   const userCookieId=Cookies.get('userId')
+  const baseUrl=`http://localhost:3000`
 
   function handleFormSubmitPublic(event) {
     event.preventDefault();
-    axios.post(`http://localhost:3000/posts/${props.privatePage ? `private` : `public`}?userId=${userCookieId}`, {
+    axios.post(`${baseUrl}/posts/${props.privatePage ? `private` : `public`}?userId=${userCookieId}`, {
       title: titleValue,
       content: inputValue,
     })
@@ -41,26 +42,26 @@ function Center(props) {
   useEffect(() => {
   const getData = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/users`);
+      const response = await axios.get(`${baseUrl}/users`);
       setFriends(response.data);
     } catch (error) {console.error('Error fetching data: ', error);}};
   getData();}, [])
 
   const liker=async (postId)=>{
     try{
-    await axios.post(`http://localhost:3000/like?userId=${userCookieId}&postId=${postId}`,{}); 
+    await axios.post(`${baseUrl}/like?userId=${userCookieId}&postId=${postId}`,{}); 
     } catch (error) {console.error('Error fetching data: ', error.response);}};
 
     const disliker=async (postId)=>{
       try{
-        await axios.post(`http://localhost:3000/dislike?userId=${userCookieId}&postId=${postId}`,{}); 
+        await axios.post(`${baseUrl}/dislike?userId=${userCookieId}&postId=${postId}`,{}); 
       } catch (error) {console.error('Error fetching data: ', error.data.response);}};
 
   const GetPosts = ({ mode = `user/profile` }) => {
     const [posts, setPosts] = useState([]);
       const fetchData = async () => {
         try {
-          const response = await axios.get(`http://localhost:3000/${mode}?userId=${userCookieId}`);
+          const response = await axios.get(`${baseUrl}/${mode}?userId=${userCookieId}`);
           if(mode == `user/profile` ){
           setPosts(response.data.posts.reverse())
           setUsername(response.data.profile.username);
@@ -76,20 +77,55 @@ function Center(props) {
       posts.map((post) => (
         <div key={post._id}>
           <p>{post.title}</p>
-          <div className="background-div-post">{post.content}</div>
+          <div className="background-div-post" onClick={GetComments(post._id)}>{post.content}</div>
           <Row className='flexer'>
             <Col sm={4}>{post.likes.length} likes</Col>
             <Col sm={8}>{post.dislikes.length} dislikes</Col>
           </Row>
           <Row className='flexer'>
-            <Col sm><Button onClick={()=>liker(post._id)}>Like</Button></Col>
+            <Col sm><Button type="submit" onClick={()=>liker(post._id)}>Like</Button></Col>
             <Col sm><Button type="submit" onClick={()=>disliker(post._id)}>Dislike</Button></Col>
-            <Col sm><Button type="submit">Reply</Button></Col>
+            <Col sm><Button type="submit" onClick={()=>(post._id)}>Reply</Button></Col>
           </Row>
         </div>
       )))
+ 
   }
+ 
+  
+    const GetComments=({postId})=>{
+      const [comments,setComments]=useState([]);
+      const inside=async(postId)=>{
+      try{setComments(await axios.get(`${baseUrl}/posts/messages?postId=${postId}`))}
+      catch (error) {console.error('Error fetching data: ', error);}}
+    inside(postId);
+  return (      
+  <Container className='postContainer'>
+  <div key='{post.id}'>
+  <p>{'post.title'}</p>
+     <Row>{txt}</Row>
+      <div className="background-div-post"></div>
+      <Row className='flexer'>
+        <Col sm={4}>{'post.likes.length'} likes</Col>
+        <Col sm={8}>{'post.dislikes.length'} dislikes</Col>
+      </Row>
+      <Row className='flexer'>
+        <Col sm><Button onClick={()=>liker('post._id')}>Like</Button></Col>
+        <Col sm><Button type="submit" onClick={()=>disliker('post._id')}>Dislike</Button></Col>
+        <Col sm><Button type="submit">Reply</Button></Col>
+      </Row>
+      <Container className='postContainer'>
+      {comments.map((comment)=>(
+      <Row className='flexer'>
+      <Col sm={2}>{comment.username}</Col>
+      <Col sm={8}>{comment.content}</Col>
+      </Row>))}
+      </Container>
+    </div></Container>
+)
 
+  };
+  
  const txt="McNulty's on harbor patrol. Daniels is in the police-archives dungeon. Prez is chafing in the suburbs. Greggs has a desk job. The detail may be on ice, but corruption marches on . . . and a horrific discovery is about to turn the Baltimore shipping port inside out. Setting up in the wake of the first season's joint homicide/narcotics detail that exposed a major drug operation — and left its members stigmatized and reassigned — the second season expands to include not only familiar drug dealers, but a group of longshoremen and organized crime members who are caught up in a major homicide case."
 
 
@@ -111,26 +147,13 @@ function Center(props) {
             <p>member since {date}</p>
           <GetPosts/>
           </>)}
+          {props.postPage && (<GetComments postId='662a196e2bb94ae6ff24163c'/>)}
         </Container>
       </Form>)}
+ 
       <FriendsList friends={friends}/> */}
       {/* -----------------------------------------------------------ONE POST------------------------------------------------- */}
-      <Container className='postform'>
-      <div key='{post.id}'>
-      <p>{'post.title'}</p>
-         <Row>{txt}</Row>
-          <div className="background-div-post"></div>
-          <Row className='flexer'>
-            <Col sm={4}>{'post.likes.length'} likes</Col>
-            <Col sm={8}>{'post.dislikes.length'} dislikes</Col>
-          </Row>
-          <Row className='flexer'>
-            <Col sm><Button onClick={()=>liker('post._id')}>Like</Button></Col>
-            <Col sm><Button type="submit" onClick={()=>disliker('post._id')}>Dislike</Button></Col>
-            <Col sm><Button type="submit">Reply</Button></Col>
-          </Row>
-        </div>
-      </Container>
+      <GetComments postId='662a196e2bb94ae6ff24163c'/>
       </>
     );
 }

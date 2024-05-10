@@ -12,7 +12,7 @@ function Nav({setConnected}) {
     friendsPage: false,
     publicPage: true,
     privatePage: false,
-    userPage: false
+    userPage: false,
   });
   const [admin,setAdmin]=useState(false)
   const userCookieId=Cookies.get('userId');
