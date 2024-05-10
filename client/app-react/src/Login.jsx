@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './Register.css';
 import Cookies from 'js-cookie'
-// heyhey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hey
+// 
 const Login = ({connected,setConnected}) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
